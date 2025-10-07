@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Position Size Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .calculator {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #60a5fa;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #e2e8f0;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        input::placeholder {
+            color: #64748b;
+        }
+
+        .position-type {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bullish {
+            color: #22c55e;
+        }
+
+        .bearish {
+            color: #ef4444;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-calculate {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-clear {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .results {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #334155;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .result-row:not(:last-child) {
+            border-bottom: 1px solid #334155;
+        }
+
+        .result-label {
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .result-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .result-coins {
+            color: #60a5fa;
+        }
+
+        .result-dollars {
+            color: #22c55e;
+        }
+
+        .error {
+            background: #7f1d1d;
+            border: 2px solid #dc2626;
+            color: #fca5a5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .calculator {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>🚀 CRYPTO POSITION SIZE CALCULATOR</h1>
+        
+        <div class="input-group">
+            <label for="riskAmount">Risk Amount ($)</label>
+            <input type="number" id="riskAmount" placeholder="Enter risk amount" step="0.01">
+        </div>
+
+        <div class="input-group">
+            <label for="entryPrice">Entry Price ($)</label>
+            <input type="number" id="entryPrice" placeholder="Enter entry price" step="0.01">
+        </div>
+
+        <div class="input-group">
+            <label for="stopLoss">Stop Loss ($)</label>
+            <input type="number" id="stopLoss" placeholder="Enter stop loss" step="0.01">
+        </div>
+
+        <div class="input-group">
+            <label for="entryFee">Entry Fee (%)</label>
+            <input type="number" id="entryFee" value="0.055" step="0.001">
+        </div>
+
+        <div class="input-group">
+            <label for="exitFee">Exit Fee (%)</label>
+            <input type="number" id="exitFee" value="0.055" step="0.001">
+        </div>
+
+        <div class="position-type" id="positionType"></div>
+
+        <div class="button-group">
+            <button class="btn-calculate" onclick="calculate()">Calculate</button>
+            <button class="btn-clear" onclick="clearFields()">Clear</button>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results">
+            <div class="result-row">
+                <span class="result-label">Position Size (Coins):</span>
+                <span class="result-value result-coins" id="positionCoins">0.00000000</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Position Size ($):</span>
+                <span class="result-value result-dollars" id="positionDollars">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function calculate() {
+            // Get input values
+            const riskAmount = parseFloat(document.getElementById('riskAmount').value);
+            const entryPrice = parseFloat(document.getElementById('entryPrice').value);
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+            const entryFee = parseFloat(document.getElementById('entryFee').value);
+            const exitFee = parseFloat(document.getElementById('exitFee').value);
+
+            // Validate inputs
+            if (isNaN(riskAmount) || isNaN(entryPrice) || isNaN(stopLoss) || isNaN(entryFee) || isNaN(exitFee)) {
+                showError('Please fill in all fields with valid numbers');
+                return;
+            }
+
+            if (riskAmount <= 0 || entryPrice <= 0 || stopLoss <= 0) {
+                showError('All values must be greater than zero');
+                return;
+            }
+
+            if (stopLoss === entryPrice) {
+                showError('Stop Loss cannot be equal to Entry Price');
+                return;
+            }
+
+            // Determine position type
+            const positionTypeDiv = document.getElementById('positionType');
+            if (stopLoss < entryPrice) {
+                positionTypeDiv.innerHTML = '🚀 You are BULLISH';
+                positionTypeDiv.className = 'position-type bullish';
+            } else {
+                positionTypeDiv.innerHTML = '🐻 You are BEARISH';
+                positionTypeDiv.className = 'position-type bearish';
+            }
+
+            // Calculate position size
+            const priceRisk = Math.abs(entryPrice - stopLoss);
+            const entryFeeCost = entryPrice * (entryFee / 100);
+            const exitFeeCost = stopLoss * (exitFee / 100);
+            const totalRiskPerCoin = priceRisk + entryFeeCost + exitFeeCost;
+
+            const positionSizeCoins = riskAmount / totalRiskPerCoin;
+            const positionSizeDollars = positionSizeCoins * entryPrice;
+
+            // Display results
+            document.getElementById('positionCoins').textContent = positionSizeCoins.toFixed(8);
+            document.getElementById('positionDollars').textContent = '$' + positionSizeDollars.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function clearFields() {
+            document.getElementById('riskAmount').value = '';
+            document.getElementById('entryPrice').value = '';
+            document.getElementById('stopLoss').value = '';
+            document.getElementById('positionCoins').textContent = '0.00000000';
+            document.getElementById('positionDollars').textContent = '$0.00';
+            document.getElementById('positionType').innerHTML = '';
+            document.getElementById('positionType').className = 'position-type';
+        }
+
+        // Allow Enter key to calculate
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+</body>
+</html>
